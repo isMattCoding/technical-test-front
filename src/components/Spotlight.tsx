@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Box, TextInput, Title } from '@mantine/core';
+import "./spotlight.css"
 
 export default function Spotlight() {
   const [isOpen, setIsOpen] = useState(false)
@@ -23,14 +24,6 @@ export default function Spotlight() {
     <Box
       style={{
         display: isOpen ? 'block' : 'none',
-        backgroundColor: 'rgba(0, 0, 0, 0.2)',
-        width: '100vw',
-        height: '100vh',
-        zIndex: '999',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        position: 'absolute',
       }}
       id="modal-background"
       onClick={(e: Record<string, any>) => {
@@ -40,20 +33,8 @@ export default function Spotlight() {
         }
       }
     >
-      <Box style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)'
-      }}>
-        <Box style={{
-          width: '50vw',
-          minWidth: '300px',
-          backgroundColor: 'white',
-          height: '160px',
-          borderRadius: '1rem',
-          padding: '1rem'
-        }}>
+      <Box className="center">
+        <Box className="spotlight-modal">
           <Title>Search: {isOpen}</Title>
           <TextInput
             placeholder="/"
