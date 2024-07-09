@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Box, TextInput, Title } from '@mantine/core';
+import { Box, Title } from '@mantine/core';
 import "./spotlight.css"
+import Search from "./Search";
 
 export default function Spotlight() {
   const [isOpen, setIsOpen] = useState(false)
@@ -8,6 +9,7 @@ export default function Spotlight() {
   useEffect(() => {
     function handlePress(e: Record<string, any>) {
       if (e.code === 'Slash') {
+        e.preventDefault();
         setIsOpen(prevIsOpen => !prevIsOpen)
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
@@ -36,9 +38,7 @@ export default function Spotlight() {
       <Box className="center">
         <Box className="spotlight-modal">
           <Title>Search: {isOpen}</Title>
-          <TextInput
-            placeholder="/"
-          />
+          <Search />
         </Box>
       </Box>
     </Box>

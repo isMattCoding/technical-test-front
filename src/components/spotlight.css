@@ -18,9 +18,9 @@
 
 .spotlight-modal {
   width: 50vw;
-  minwidth: 300px;
+  min-width: 300px;
   background-color: white;
-  height: 160px;
+  min-height: 160px;
   border-radius: 1rem;
   padding: 1rem;
 }

@@ -1,0 +1,13 @@
+.search-results {
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.search-results__category-result:hover {
+  background-color: #eee;
+}
+
+.search-results p {
+  margin: 0;
+  padding: 1rem;
+}
