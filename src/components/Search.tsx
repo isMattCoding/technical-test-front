@@ -14,6 +14,16 @@ function matchesSearchTerm(string: string, searchTerm: string) {
   return string.toLowerCase().includes(searchTerm.toLowerCase())
 }
 
+function HiglightedWord({array, searchTerm}:{array: string[], searchTerm: string}) {
+  return array.map((text, i) => {
+    const length = array.length
+    return <React.Fragment key={i}>
+      {text && <span>{text}</span>}
+      {(searchTerm !== "" && i < length - 1) && <span className="highlight">{searchTerm}</span>}
+    </React.Fragment>
+  })
+}
+
 function SearchResultItem({category, searchTerm}: {
   category: CategoryType | SubcategoryType,
   searchTerm: string
@@ -34,22 +44,10 @@ function SearchResultItem({category, searchTerm}: {
         className="search-results__category-result"
         onClick={onClick}
       >
-        <p>
-          {categoryArray.map((text, i) => {
-            const length = categoryArray.length
-            return <React.Fragment key={i}>
-              {i == 0 ? text.charAt(0).toUpperCase() + text.substring(1) : `${text}`}
-              {i < length - 1 && <span className="highlight">{i == 0 ? searchTerm.charAt(0).toUpperCase() + searchTerm.toLowerCase().substring(1) : searchTerm}</span>}
-            </React.Fragment>
-          })}
+        <p className="capitalize">
+          <HiglightedWord array={categoryArray} searchTerm={searchTerm}/>
           {' > '}
-          {nameArray.map((text, i) => {
-            const length = nameArray.length
-            return <React.Fragment key={i}>
-              {i == 0 ? text.charAt(0).toUpperCase() + text.substring(1) : text}
-              {i < length - 1 && <span className="highlight">{i == 0 ? searchTerm.charAt(0).toUpperCase() + searchTerm.toLowerCase().substring(1) : searchTerm}</span>}
-            </React.Fragment>
-          })}
+          <HiglightedWord array={nameArray} searchTerm={searchTerm}/>
         </p>
       </div>
     </>
@@ -68,16 +66,8 @@ function SearchResultItem({category, searchTerm}: {
         className="search-results__category-result"
         onClick={onClick}
       >
-        <p>
-          {textArray.map((text, i) => {
-            const length = textArray.length
-            return (
-              <React.Fragment key={i}>
-                {i == 0 ? text.charAt(0).toUpperCase() + text.substring(1) : text}
-                {i < length - 1 && <span className="highlight">{i == 0 ? searchTerm.charAt(0).toUpperCase() + searchTerm.toLowerCase().substring(1) : searchTerm}</span>}
-              </React.Fragment>
-            )
-          })}
+        <p className="capitalize">
+          <HiglightedWord array={textArray} searchTerm={searchTerm}/>
         </p>
       </div>
     </>
@@ -87,6 +77,7 @@ function SearchResultItem({category, searchTerm}: {
 function UserResults({searchTerm}: {searchTerm: string}) {
   const navigate = useNavigate();
   const [users, setUsers] = useState([])
+
   useEffect(() => {
     if (users.length === 0) {
       loadUsers()
@@ -96,58 +87,72 @@ function UserResults({searchTerm}: {searchTerm: string}) {
     }
   }, [])
 
-  const userResults = users.filter((user: {name: string, id: number}) => matchesSearchTerm(user.name, searchTerm))
+  const userResults =
+    users
+      .filter((user: {name: string, id: number}) =>
+        matchesSearchTerm(user.name, searchTerm))
 
     return (
       <div className="search-results">
         {userResults.length === 0 && <>Loading...</>}
-        {userResults.length > 0 && <>
-          {userResults.map((user: {name: string, id: number}) => {
-            const usernameArray = user.name.toLowerCase().split(searchTerm.toLowerCase())
-            function onClick() {
-              navigate(`user/${user.id}`)
-            }
-            return (
-              <>
-                <div
-                  className="search-results__category-result"
-                  onClick={onClick}
-                >
-                  <p>@
-                    {usernameArray.map((text, i) => {
-                      const length = usernameArray.length
-                      return (
-                        <React.Fragment key={i}>
-                          {i == 0 ? text.charAt(0).toUpperCase() + text.substring(1) : text}
-                          {i < length - 1 && <span className="highlight">{i == 0 ? searchTerm.charAt(0).toUpperCase() + searchTerm.toLowerCase().substring(1) : searchTerm}</span>}
-                        </React.Fragment>
-                      )
-                    })}
-                  </p>
-                </div>
-              </>
-            )
-          })}
-        </>}
+        {userResults.length > 0 && (
+          <>
+            {userResults.map((user: {name: string, id: number}) => {
+              const usernameArray =
+                user.name.toLowerCase()
+                  .split(searchTerm.toLowerCase())
+
+              function onClick() {
+                navigate(`user/${user.id}`)
+              }
+
+              return (
+                <>
+                  <div
+                    className="search-results__category-result"
+                    onClick={onClick}
+                  >
+                    <p className="capitalize">@
+                      <HiglightedWord array={usernameArray} searchTerm={searchTerm}/>
+                    </p>
+                  </div>
+                </>
+              )
+            })}
+          </>
+        )}
       </div>
     )
 }
 
 function SearchResults({searchTerm}: {searchTerm: string}) {
   if (!searchTerm) return;
+  // Users Search
+
   if (searchTerm[0] === "@") {
     return <UserResults searchTerm={searchTerm.replace("@", "")} />
   }
+  // Pages Search
+
+  // We remove the categories that have subcategories, since they don't have their own route
   const searchableCategories =
     pages.categories
       .filter((category: CategoryType) => {
         return !pages.subcategories.map(x=>x.category).includes(category)
       })
-  const categoriesResults = searchableCategories.filter((category: CategoryType) => matchesSearchTerm(category, searchTerm))
 
-  const subcategoriesResults = pages.subcategories.filter((subcategory:SubcategoryType) =>  matchesSearchTerm(subcategory.name, searchTerm) || matchesSearchTerm(subcategory.category, searchTerm))
+  const categoriesResults =
+    searchableCategories
+      .filter((category: CategoryType) =>
+        matchesSearchTerm(category, searchTerm))
 
-  const results: Array<CategoryType | SubcategoryType> = [...categoriesResults, ...subcategoriesResults]
+  const subcategoriesResults =
+    pages.subcategories
+      .filter((subcategory:SubcategoryType) =>
+        matchesSearchTerm(subcategory.name, searchTerm) || matchesSearchTerm(subcategory.category, searchTerm))
+
+  const results: Array<CategoryType | SubcategoryType> =
+    [...categoriesResults, ...subcategoriesResults]
 
   return (
     <div className="search-results">

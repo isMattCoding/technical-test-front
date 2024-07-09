@@ -11,3 +11,7 @@
   margin: 0;
   padding: 1rem;
 }
+
+p.capitalize span:first-of-type {
+  text-transform: capitalize;
+}
