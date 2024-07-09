@@ -16,6 +16,9 @@ export default function Spotlight() {
         e.preventDefault();
         setIsOpen((prevIsOpen) => !prevIsOpen);
       }
+      if (e.key === "Escape") {
+        setIsOpen(false)
+      }
     }
     document.addEventListener("keydown", handlePress)
 
