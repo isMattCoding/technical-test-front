@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import './search.css'
 import './instructions.css'
 import React from "react";
+import { loadUsers } from "../api";
 
 type CategoryType = string
 type SubcategoryType = {name: string, category: CategoryType}
@@ -19,8 +20,8 @@ function SearchResultItem({category, searchTerm}: {
 }) {
   const navigate = useNavigate();
   if (typeof category !== 'string') {
-    const nameArray = category.name.split(searchTerm)
-    const categoryArray = category.category.split(searchTerm)
+    const nameArray = category.name.toLowerCase().split(searchTerm.toLowerCase())
+    const categoryArray = category.category.toLowerCase().split(searchTerm.toLowerCase())
 
     function onClick() {
       if (typeof category !== 'string') {
@@ -37,16 +38,16 @@ function SearchResultItem({category, searchTerm}: {
           {categoryArray.map((text, i) => {
             const length = categoryArray.length
             return <React.Fragment key={i}>
-              {`${text}`}
-              {i < length - 1 && <span className="highlight">{searchTerm}</span>}
+              {i == 0 ? text.charAt(0).toUpperCase() + text.substring(1) : `${text}`}
+              {i < length - 1 && <span className="highlight">{i == 0 ? searchTerm.charAt(0).toUpperCase() + searchTerm.toLowerCase().substring(1) : searchTerm}</span>}
             </React.Fragment>
           })}
           {' > '}
           {nameArray.map((text, i) => {
             const length = nameArray.length
             return <React.Fragment key={i}>
-              {text}
-              {i < length - 1 && <span className="highlight">{searchTerm}</span>}
+              {i == 0 ? text.charAt(0).toUpperCase() + text.substring(1) : text}
+              {i < length - 1 && <span className="highlight">{i == 0 ? searchTerm.charAt(0).toUpperCase() + searchTerm.toLowerCase().substring(1) : searchTerm}</span>}
             </React.Fragment>
           })}
         </p>
@@ -55,7 +56,7 @@ function SearchResultItem({category, searchTerm}: {
   }
 
   if (typeof category === 'string') {
-    const textArray = category.split(searchTerm)
+    const textArray = category.toLowerCase().split(searchTerm.toLowerCase())
     function onClick() {
       if (typeof category === 'string') {
         navigate(`${category}`)
@@ -72,8 +73,8 @@ function SearchResultItem({category, searchTerm}: {
             const length = textArray.length
             return (
               <React.Fragment key={i}>
-                {text}
-                {i < length - 1 && <span className="highlight">{searchTerm}</span>}
+                {i == 0 ? text.charAt(0).toUpperCase() + text.substring(1) : text}
+                {i < length - 1 && <span className="highlight">{i == 0 ? searchTerm.charAt(0).toUpperCase() + searchTerm.toLowerCase().substring(1) : searchTerm}</span>}
               </React.Fragment>
             )
           })}
@@ -83,8 +84,60 @@ function SearchResultItem({category, searchTerm}: {
   }
 }
 
+function UserResults({searchTerm}: {searchTerm: string}) {
+  const navigate = useNavigate();
+  const [users, setUsers] = useState([])
+  useEffect(() => {
+    if (users.length === 0) {
+      loadUsers()
+        .then((res) => {
+          setUsers([...res as []])
+        })
+    }
+  }, [])
+
+  const userResults = users.filter((user: {name: string, id: number}) => matchesSearchTerm(user.name, searchTerm))
+
+    return (
+      <div className="search-results">
+        {userResults.length === 0 && <>Loading...</>}
+        {userResults.length > 0 && <>
+          {userResults.map((user: {name: string, id: number}) => {
+            const usernameArray = user.name.toLowerCase().split(searchTerm.toLowerCase())
+            function onClick() {
+              navigate(`user/${user.id}`)
+            }
+            return (
+              <>
+                <div
+                  className="search-results__category-result"
+                  onClick={onClick}
+                >
+                  <p>@
+                    {usernameArray.map((text, i) => {
+                      const length = usernameArray.length
+                      return (
+                        <React.Fragment key={i}>
+                          {i == 0 ? text.charAt(0).toUpperCase() + text.substring(1) : text}
+                          {i < length - 1 && <span className="highlight">{i == 0 ? searchTerm.charAt(0).toUpperCase() + searchTerm.toLowerCase().substring(1) : searchTerm}</span>}
+                        </React.Fragment>
+                      )
+                    })}
+                  </p>
+                </div>
+              </>
+            )
+          })}
+        </>}
+      </div>
+    )
+}
+
 function SearchResults({searchTerm}: {searchTerm: string}) {
   if (!searchTerm) return;
+  if (searchTerm[0] === "@") {
+    return <UserResults searchTerm={searchTerm.replace("@", "")} />
+  }
   const searchableCategories =
     pages.categories
       .filter((category: CategoryType) => {
