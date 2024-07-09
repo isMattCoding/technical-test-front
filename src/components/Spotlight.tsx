@@ -30,7 +30,6 @@ export default function Spotlight() {
       id="modal-background"
       onClick={(e: Record<string, any>) => {
         if (e.target["id"] === "modal-background") {
-          console.log(e)
           setIsOpen(false)}
         }
       }
